@@ -64,3 +64,19 @@ visible. No model is trained beforehand on survey data.
 
 The technical report on OpenReview describes the method and its evidence in
 full.
+
+## Layout
+
+| Path | What it is |
+|---|---|
+| `submission/main.py` | The submission: defines `predict(frame, schema)`. Unchanged since it was scored |
+| `submission/requirements.txt` | Packages the hosted image lacks, pinned |
+| `submission/libgomp-*.so.1`, `libgomp-copyright.txt` | Debian's OpenMP runtime for LightGBM, loaded only when the system has none |
+| `submission/sdm/`, `submission/licenses/`, `submission/NOTICE` | Third-party code and licences that were in the zip (see below) |
+| `manifest.json` | SHA-256 of every file in the submitted zip, the zip's own hash, and the pinned model files |
+| `scripts/fetch_weights.py` | Downloads the three model files at their pinned commits and checks their hashes |
+| `scripts/build_submission.py` | Checks every file against the manifest and writes `dist/submission.zip` |
+| `scripts/test_*.py` | Checks of the repository that need no GPU and no model files |
+
+A few comments in `main.py` mention `REVIEW.md`. That is a private development
+log and is not part of this repository.
