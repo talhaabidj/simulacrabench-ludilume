@@ -132,3 +132,29 @@ To run the repository's own checks:
 python3 -m pip install pytest
 python3 -m pytest scripts
 ```
+
+## Hardware and time
+
+The real survey data are not public, so real scores come only from the hosted
+grader. There the zip ran on Python 3.13 with one H100 GPU, 8 CPUs and 16 GB of
+memory, under a limit of 3,600 seconds for the three instruments together. Our
+Test run took about 36 minutes.
+
+To run `predict()` yourself, use the starter kit's `score.py` with its synthetic
+sandbox data. It installs `submission/requirements.txt` into a fresh
+environment. Our own full-length rehearsals ran on a 16 GB T4 GPU and used
+nearly the whole 3,600 seconds. We did not test a run without a GPU.
+
+## Limitations
+
+- The score cannot be reproduced outside the hosted grader, because the survey
+  data are not released. What this repository reproduces exactly is the
+  submitted file.
+- The run is driven by the clock: it does as much as fits in the time limit.
+  Seeds are fixed, but a different machine finishes a different amount of work,
+  so two runs can give slightly different predictions.
+- The three model files are hosted by their authors. If one is moved or removed,
+  `fetch_weights.py` will fail for that file; the hashes in `manifest.json`
+  still identify the exact files.
+- `submission/main.py` is kept byte for byte as it was scored. It is one long
+  file and carries comments from development.
