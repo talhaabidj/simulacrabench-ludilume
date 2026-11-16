@@ -14,10 +14,14 @@ rebuild the submitted zip byte for byte.
 Test phase, Codabench submission 1053745 (15 November 2026). Skill is 0 for the
 crowd marginal and 1 for a perfect prediction.
 
-| | Grand | UNICEF | World Bank | UNHCR |
+| | Grand Prize | UNICEF | World Bank | UNHCR |
 |---|---|---|---|---|
-| Test | 0.4862 | 0.3426 | 0.2368 | 0.8793 |
-| Development (noised and rounded by the platform) | 0.4878 | 0.3499 | 0.2486 | 0.8650 |
+| Test (1053745) | 0.4862 | 0.3426 | 0.2368 | 0.8793 |
+| Development, the same zip (1052251) | 0.4878 | 0.3499 | 0.2486 | 0.8650 |
+| Development, our leaderboard entry (1039127, an earlier build) | 0.4943 | 0.3499 | 0.2486 | 0.8843 |
+
+The leaderboard shows these rounded to two decimals. Development readings are
+noised and rounded by the platform and are not comparable with Test.
 
 ## Method in short
 
