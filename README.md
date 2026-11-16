@@ -54,3 +54,54 @@ Skill is 0 for the crowd marginal and 1 for a perfect prediction.
 
 The leaderboard shows these rounded to two decimals. Development readings are
 noised and rounded by the platform and are not comparable with Test.
+
+## Quick start
+
+You need Python 3.10 or later, git, about 2 GB of free disk space and an
+internet connection. No GPU and no extra packages are needed. If your system
+calls Python 3 `python`, use that in place of `python3`.
+
+```bash
+git clone https://github.com/talhaabidj/simulacrabench-ludilume
+cd simulacrabench-ludilume
+git checkout test-submission-1053745
+python3 scripts/fetch_weights.py
+python3 scripts/build_submission.py
+```
+
+The last lines should read:
+
+```
+156 files match manifest.json
+.../dist/submission.zip
+SHA-256   ec48ff5629f21732c38bf83147571bf1bb049211c03c3286464f35843b0f9c5b
+submitted ec48ff5629f21732c38bf83147571bf1bb049211c03c3286464f35843b0f9c5b
+The zip is byte-identical to the Test submission.
+```
+
+The tag `test-submission-1053745` marks the commit that the technical report
+cites. The files under `submission/` and `manifest.json` are the ones that were
+scored; they have not changed since they were added to this repository.
+
+## What is in this repository
+
+| Path | What it is |
+|---|---|
+| `submission/main.py` | The submission: defines `predict(frame, schema)`. Unchanged since it was scored |
+| `submission/requirements.txt` | Packages the hosted image lacks, pinned to exact versions |
+| `submission/libgomp-*.so.1`, `libgomp-copyright.txt` | The OpenMP runtime that LightGBM needs, loaded only when the system has none |
+| `submission/sdm/`, `submission/licenses/`, `submission/NOTICE` | Third-party code and licences that were in the zip (see [below](#third-party-code-in-the-zip)) |
+| `manifest.json` | SHA-256 and size of every file in the submitted zip, the zip's own hash, and the pinned source of each model file |
+| `scripts/fetch_weights.py` | Downloads the three model files at their pinned commits and checks their hashes |
+| `scripts/build_submission.py` | Checks every file against the manifest and writes `dist/submission.zip` |
+| `scripts/manifest.py` | Helpers the two scripts share |
+| `scripts/test_*.py` | Checks of the repository that need no GPU and no model files |
+| `requirements-dev.txt` | The pinned tool that runs the checks |
+| `.github/workflows/checks.yml` | Runs the checks on Linux, macOS and Windows for every change |
+| `CITATION.cff` | How to cite this repository |
+
+The three model files (about 1 GB) are not in the repository. They are fetched
+from their authors' pages and checked by hash.
+
+A few comments in `main.py` mention `REVIEW.md`. That is a private development
+log and is not part of this repository.
