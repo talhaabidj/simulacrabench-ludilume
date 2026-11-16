@@ -103,7 +103,7 @@ is the download.
 
 The tag `test-submission-1053745` marks the commit that the technical report
 cites. The files under `submission/` and `manifest.json` are the ones that were
-scored; they have not changed since the first commit of this repository.
+scored; they have not changed since they were added to this repository.
 
 ## Verify
 
