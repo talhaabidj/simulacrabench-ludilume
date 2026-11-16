@@ -191,15 +191,22 @@ Built with PriorLabs-TabPFN.
 This repository holds no survey data. The submission uses only the frame the
 grader passes to `predict()`.
 
-Public survey microdata were used on our own machines to compare versions before
-uploading. They never entered the submission and were never linked to
+Public survey data were used offline, on Kaggle and Colab, to compare builds
+before uploading. They never entered the submission and were never linked to
 competition data:
 
-- Afrobarometer rounds 6 to 9;
-- Argentina's Encuesta Permanente de Hogares. Source: Instituto Nacional de
-  Estadística y Censos (INDEC);
-- Rwanda Labour Force Survey 2019, 2022 and 2024;
-- the Open Psychometrics RIASEC test data (openpsychometrics.org).
+| Data | Obtained from | Licence |
+|---|---|---|
+| Afrobarometer, rounds 6 to 9 | copies published by Electric Sheep Africa on Hugging Face (`electricsheepafrica/africa-afrobarometer-<country>`); original: <https://www.afrobarometer.org/data/> | CC-BY-4.0 (the copies) |
+| Encuesta Permanente de Hogares, Argentina. Source: Instituto Nacional de Estadística y Censos (INDEC) | `Matiasdn/eph-microdata-parquet` on Hugging Face | public microdata; the copy carries no licence tag |
+| Rwanda Labour Force Survey 2019, 2022 and 2024, National Institute of Statistics of Rwanda | copies published by Electric Sheep Africa on Hugging Face; original: <https://microdata.statistics.gov.rw/> | CC-BY-4.0 (the copies) |
+| RIASEC test answers, Open-Source Psychometrics Project | <https://openpsychometrics.org/_rawdata/> | none stated |
+
+For context we also read the competition's public starter kit and UNHCR's two
+public methodology notes on the survey behind the UNHCR instrument
+(<https://data.unhcr.org/en/documents/details/118503> and
+<https://data.unhcr.org/en/documents/details/122187>). These are documents, not
+data.
 
 ## Licence
 
