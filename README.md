@@ -139,8 +139,10 @@ python3 -m pytest scripts
 
 The real survey data are not public, so real scores come only from the hosted
 grader. There the zip ran on Python 3.13 with one H100 GPU, 8 CPUs and 16 GB of
-memory, under a limit of 3,600 seconds for the three instruments together. Our
-Test run took about 36 minutes.
+memory, under a limit of 3,600 seconds for the three instruments together. The
+hosted image already holds PyTorch, scikit-learn and SciPy; the other packages
+are pinned in `submission/requirements.txt`. Our Test run took about 36
+minutes.
 
 To run `predict()` yourself, use the starter kit's `score.py` with its synthetic
 sandbox data. It installs `submission/requirements.txt` into a fresh
