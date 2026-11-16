@@ -105,3 +105,89 @@ from their authors' pages and checked by hash.
 
 A few comments in `main.py` mention `REVIEW.md`. That is a private development
 log and is not part of this repository.
+
+## How the method works
+
+Everything is fitted inside `predict()` on the respondents whose answers are
+visible. No model is trained beforehand on survey data.
+
+```mermaid
+flowchart LR
+    A[frame and schema] --> B[encode the background answers and plan the skip logic]
+    B --> C[candidate models predict the visible rows out of fold]
+    C --> D[per-question blend on the grader's own score]
+    D --> E[adjust ordered options and reply to the score floor]
+    E --> F[one probability vector per blank cell]
+```
+
+1. **Candidates per question.** For each scored question, several models
+   predict the answer from the respondent's always-visible background answers
+   (the schema calls them GIVEN):
+   - the crowd marginal, and count tables over the most informative background
+     columns, smoothed toward coarser tables;
+   - regularised multinomial logistic regression, with and without the most
+     informative column pairs;
+   - gradient-boosted trees (LightGBM) in several settings, including one with
+     target-encoded inputs and one for questions with ordered options;
+   - multi-task neural networks that share one trunk across all questions;
+   - three tabular foundation models used in context, without fine-tuning:
+     TabICL v2, TabPFN v2 and TabPFN-3.5.
+2. **Skip logic.** When a question's gate parent is a background answer and the
+   visible rows obey the rule, closed rows get the "not asked" option directly.
+   When the parent is itself a scored question, extra candidates combine the
+   parent's predicted answer with a model fitted on the rows that were asked.
+3. **Household matching (UNHCR).** The UNHCR file holds two survey rounds.
+   UNHCR's public note on the survey's second wave says that it recontacted the
+   first-wave households (see [Data](#data)). The competition schema neither
+   says that its rounds are those waves nor gives an identifier that links a
+   household across them. In case households do appear in both rounds, rows
+   from the two rounds are matched when each is the other's best match by a
+   clear margin, first on their answers and then, at a lower bar, where the
+   background columns also agree. A matched partner's answers give two more
+   candidates per question. The step stays off when it finds fewer than 30
+   matches, and the hosted run does not tell us whether it switched on. We
+   asked the organizers whether a model may benefit from such matches, using
+   only the GIVEN columns and the visible rows provided at run time; they
+   replied by email (6 November 2026) that this is permitted. Nothing is
+   matched to any outside source, and no person is identified.
+4. **Blend.** Every candidate predicts the visible rows out of fold. Per
+   question, mixture weights are fitted by EM to maximise the grader's own
+   floored log score on those predictions, and the better of a linear, a
+   tempered or a log pool is kept. The held-out rows get that blend.
+5. **After the blend.** For ordered options, some probability may move to the
+   neighbouring options when that scores better out of fold. The grader mixes
+   every vector with a small flat floor before scoring; the vector sent is the
+   one whose scored version equals the blend, whenever that scores better out
+   of fold.
+
+Every setting is a constant near the top of `submission/main.py`. The technical
+report submitted to the competition's OpenReview venue lists them all and
+describes the method and its evidence in full.
+
+## How the submission runs
+
+The grader imports `main.py` and calls `predict(frame, schema)` once per
+instrument. `frame` holds every respondent, with the held-out answers blank.
+`predict()` returns one probability vector per blank cell.
+
+- **One clock for three instruments.** The time limit covers all three calls
+  together. Each call takes a share of what is left, by a nominal need that
+  grows with its number of scored questions.
+- **Passes, cheapest first.** Work runs in passes, so a slow machine loses
+  accuracy, not answers. Any candidate that fails is dropped. A question with
+  nothing left gets the crowd marginal.
+- **No silent weak run.** On a real instrument the run stops with an error if
+  TabICL or TabPFN-3.5 cannot load, because a failed Test run may be repeated
+  and a weak finished one may not.
+- **No network, no files.** The model files are read from the zip. Nothing is
+  downloaded or written during a run.
+
+The hosted platform sets none of the switches below. They exist for testing.
+
+| Environment variable | Effect | Default |
+|---|---|---|
+| `SB_BUDGET_SCALE` | Multiplies the time budget | `1` |
+| `SB_JOBS` | Number of worker threads | the smaller of 8 and the CPU count |
+| `SB_ICL_CPU` | When set, TabICL runs on the CPU | not set (GPU) |
+| `SB_REQUIRE_MODELS` | `0` lets a run continue without TabICL or TabPFN-3.5 | `1` |
+| `SB_DEBUG` | Path of a file that receives the time of each pass | not set (nothing is written) |
