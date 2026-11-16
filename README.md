@@ -302,7 +302,7 @@ competition data:
 | Data | Obtained from | Licence |
 |---|---|---|
 | Afrobarometer, rounds 6 to 9 | copies published by Electric Sheep Africa on Hugging Face (`electricsheepafrica/africa-afrobarometer-<country>`); original: <https://www.afrobarometer.org/data/> | CC-BY-4.0 (the copies) |
-| Encuesta Permanente de Hogares, Argentina. Source: Instituto Nacional de Estadística y Censos (INDEC) | `Matiasdn/eph-microdata-parquet` on Hugging Face | public microdata; the copy carries no licence tag |
+| Encuesta Permanente de Hogares, Argentina. Source: Instituto Nacional de Estadística y Censos (INDEC) | `Matiasdn/eph-microdata-parquet` on Hugging Face | CC-BY-4.0 at the source: INDEC lists the survey under that licence on Argentina's open data portal (<https://datos.gob.ar>). The copy carries no licence tag |
 | Rwanda Labour Force Survey 2019, 2022 and 2024, National Institute of Statistics of Rwanda | copies published by Electric Sheep Africa on Hugging Face; original: <https://microdata.statistics.gov.rw/> | CC-BY-4.0 (the copies) |
 | RIASEC test answers, Open-Source Psychometrics Project | <https://openpsychometrics.org/_rawdata/> | none stated |
 
