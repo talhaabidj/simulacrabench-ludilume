@@ -1,0 +1,9 @@
+# Model files are fetched by scripts/fetch_weights.py, never committed.
+submission/*.ckpt
+submission/*.safetensors
+submission/*.part
+
+dist/
+__pycache__/
+.DS_Store
+.venv/
