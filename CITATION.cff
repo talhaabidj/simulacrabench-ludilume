@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+type: software
+title: "SimulacraBench entry of Ludilume Studios: per-question stacking of tabular foundation models with cross-round household matching"
+authors:
+  - family-names: Abid
+    given-names: Talha
+    affiliation: University of Central Punjab
+repository-code: "https://github.com/talhaabidj/simulacrabench-ludilume"
+license: MIT
+keywords:
+  - survey response prediction
+  - tabular foundation models
+  - stacking
+  - SimulacraBench
