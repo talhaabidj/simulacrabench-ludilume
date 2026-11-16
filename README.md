@@ -356,3 +356,41 @@ the ideas that were tried and dropped.
   real data are unmeasured.
 - Hidden answers are predicted one by one. There is no joint model of a
   respondent's answers.
+
+## Troubleshooting
+
+| What you see | What to do |
+|---|---|
+| `python3: command not found` | Use `python` if that is Python 3 on your system (`python --version`) |
+| The download stops with a connection error | Run `python3 scripts/fetch_weights.py` again. It continues from the partial file |
+| `INCOMPLETE <file>` | The connection dropped too often. Run the script again |
+| `MISMATCH <file>` | The downloaded file is not the pinned one, and the script has removed it. Run the script again. If it repeats, the file was changed at its source: please open an issue |
+| "These files are missing or differ from manifest.json" | Run `fetch_weights.py` first. If a file under `submission/` is listed, restore it with `git checkout -- submission` |
+| "Same files, different zip bytes" | Your zlib is not 1.2.12. The 156 files are identical; only the compression differs |
+| On Windows, files under `submission/` differ from the manifest | A tool rewrote their line endings. Clone again; `.gitattributes` in this repository turns that conversion off in git |
+
+If something else goes wrong while rebuilding the zip, please open an issue on
+this repository with the command and its full output.
+
+## Citation
+
+If you use this code, please cite it. `CITATION.cff` holds the details, and
+GitHub shows them under "Cite this repository".
+
+```
+Talha Abid. SimulacraBench entry of Ludilume Studios: per-question stacking of
+tabular foundation models with cross-round household matching. 2026.
+https://github.com/talhaabidj/simulacrabench-ludilume
+```
+
+## Licence
+
+The code in this repository that is ours is under the MIT licence (see
+`LICENSE`). The pretrained models and the third-party code keep their own
+licences, listed above.
+
+## Acknowledgements
+
+SimulacraBench is run by its organizing team with data from UNHCR, UNICEF and
+the World Bank; the starter kit, the grader and the hosted evaluation are
+theirs. The pretrained models are the work of the TabICL and TabPFN authors.
