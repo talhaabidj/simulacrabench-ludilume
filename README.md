@@ -80,3 +80,55 @@ full.
 
 A few comments in `main.py` mention `REVIEW.md`. That is a private development
 log and is not part of this repository.
+
+## Reproduce the submission file
+
+You need Python 3.10 or later, about 2 GB of free disk space and an internet
+connection. The scripts use only the standard library. No GPU is needed. If
+your system calls Python 3 `python`, use that in place of `python3`.
+
+```bash
+git clone https://github.com/talhaabidj/simulacrabench-ludilume
+cd simulacrabench-ludilume
+git checkout test-submission-1053745
+python3 scripts/fetch_weights.py
+python3 scripts/build_submission.py
+```
+
+`fetch_weights.py` downloads three files, about 1 GB together, from Hugging
+Face. No account is needed. Each file is kept only if its size and SHA-256
+match `manifest.json`. `build_submission.py` then checks all 156 files and
+writes `dist/submission.zip`. The whole thing takes a few minutes; most of it
+is the download.
+
+The tag `test-submission-1053745` marks the commit that the technical report
+cites. The files under `submission/` and `manifest.json` are the ones that were
+scored; they have not changed since the first commit of this repository.
+
+## Verify
+
+The last lines the build prints are the SHA-256 of the zip it wrote and that of
+the zip that was scored:
+
+```
+ec48ff5629f21732c38bf83147571bf1bb049211c03c3286464f35843b0f9c5b
+```
+
+The zip is written with fixed names, order, dates and permissions. With zlib
+1.2.12 it is byte-identical to the submitted file (943,721,566 bytes). With
+another zlib version the compressed bytes can differ; the script then says so,
+and the 156 files inside are still identical, each checked by hash.
+
+To check the zip against the competition's contract, use the official starter
+kit (<https://github.com/SituatedEvals/public>, commit `aa03186`):
+
+```bash
+python3 tools/check_submission_zip.py /path/to/dist/submission.zip
+```
+
+To run the repository's own checks:
+
+```bash
+python3 -m pip install pytest
+python3 -m pytest scripts
+```
