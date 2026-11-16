@@ -264,3 +264,50 @@ about 36 minutes.
 
 Our own full-length rehearsals ran on a 16 GB T4 GPU and used nearly the whole
 3,600 seconds.
+
+## Pretrained models
+
+All three are public, unmodified, and bundled in the zip.
+
+| Model | Hugging Face repository and commit | File | SHA-256 | Licence |
+|---|---|---|---|---|
+| TabICL v2 | `jingang/TabICL` @ `4dcd344ece2c00be9e831fdd35bed57b5ad83e19` | `tabicl-classifier-v2-20260212.ckpt` | `bdc7dbd5e4ff21f8f0456fcf90c6b7cdf72dbea960f2d05b19bec19f9b3d4ed0` | BSD-3-Clause |
+| TabPFN v2 | `Prior-Labs/TabPFN-v2-clf` @ `275f19d2add9c2c0de38f9ebaded3856599fa2e7` | `tabpfn-v2-classifier-v2_default.ckpt` | `cf8c519c01eaf1613ee91239006d57b1c806ff5f23ac1aeb1315ba1015210e49` | Prior Labs License 1.1 |
+| TabPFN-3.5 | `Prior-Labs/tabpfn_3_5` @ `06bf2ba35c80a92a3b9abb436b99cf49e7a0365e` | `tabpfn-v3.5-20260909_multiclass.safetensors` | `4f1e155b09ae1c9860c75cd0a16f811b7431ddac4cb8022ee5e4498070f44149` | TabPFN-3.5 Non-Commercial License |
+
+Built with PriorLabs-TabPFN.
+
+## Third-party code in the zip
+
+- `submission/sdm/` is structured-data-models 0.2.1 (Apache-2.0). It was bundled
+  for a model that the final build does not use; no prediction depends on it. It
+  is kept here so that the rebuilt zip matches the submitted one.
+- `submission/libgomp-*.so.1` are the GNU OpenMP runtime from Debian 11
+  (bullseye), package `libgomp1`, for x86_64 and aarch64. They are under GPL-3
+  with the GCC Runtime Library Exception; see
+  `submission/libgomp-copyright.txt`. The source is Debian's `gcc-10` package
+  (<https://sources.debian.org/src/gcc-10/>).
+- Licences for the above and for TabPFN-3.5 are in `submission/licenses/` and
+  `submission/NOTICE`.
+
+## Data
+
+This repository holds no survey data. The submission uses only the frame the
+grader passes to `predict()`.
+
+Public survey data were used offline, on Kaggle and Colab, to compare builds
+before uploading. They never entered the submission and were never linked to
+competition data:
+
+| Data | Obtained from | Licence |
+|---|---|---|
+| Afrobarometer, rounds 6 to 9 | copies published by Electric Sheep Africa on Hugging Face (`electricsheepafrica/africa-afrobarometer-<country>`); original: <https://www.afrobarometer.org/data/> | CC-BY-4.0 (the copies) |
+| Encuesta Permanente de Hogares, Argentina. Source: Instituto Nacional de Estadística y Censos (INDEC) | `Matiasdn/eph-microdata-parquet` on Hugging Face | public microdata; the copy carries no licence tag |
+| Rwanda Labour Force Survey 2019, 2022 and 2024, National Institute of Statistics of Rwanda | copies published by Electric Sheep Africa on Hugging Face; original: <https://microdata.statistics.gov.rw/> | CC-BY-4.0 (the copies) |
+| RIASEC test answers, Open-Source Psychometrics Project | <https://openpsychometrics.org/_rawdata/> | none stated |
+
+For context we also read the competition's public starter kit and UNHCR's two
+public methodology notes on the survey behind the UNHCR instrument
+(<https://data.unhcr.org/en/documents/details/118503> and
+<https://data.unhcr.org/en/documents/details/122187>). These are documents, not
+data.
