@@ -112,7 +112,7 @@ Everything is fitted inside `predict()` on the respondents whose answers are
 visible. No model is trained beforehand on survey data.
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[frame and schema] --> B[encode the background answers and plan the skip logic]
     B --> C[candidate models predict the visible rows out of fold]
     C --> D[per-question blend on the grader's own score]
