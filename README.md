@@ -191,3 +191,76 @@ The hosted platform sets none of the switches below. They exist for testing.
 | `SB_ICL_CPU` | When set, TabICL runs on the CPU | not set (GPU) |
 | `SB_REQUIRE_MODELS` | `0` lets a run continue without TabICL or TabPFN-3.5 | `1` |
 | `SB_DEBUG` | Path of a file that receives the time of each pass | not set (nothing is written) |
+
+## Rebuild and verify
+
+`fetch_weights.py` downloads three files, about 1 GB together, from Hugging
+Face. No account is needed. Each file is kept only if its size and SHA-256
+match `manifest.json`. If the connection drops, the script continues from where
+it stopped; if it gives up, run it again. `build_submission.py` then checks all
+156 files and writes `dist/submission.zip`. The download takes from a few
+minutes to half an hour, depending on the connection; the build takes under a
+minute.
+
+The zip is written with fixed names, order, dates and permissions. With zlib
+1.2.12 it is byte-identical to the submitted file. With another zlib version
+the compressed bytes can differ; the script then says so, and the 156 files
+inside are still identical, each checked by hash. To see your zlib version:
+
+```bash
+python3 -c "import zlib; print(zlib.ZLIB_RUNTIME_VERSION)"
+```
+
+To check the zip against the competition's contract, use the official starter
+kit (<https://github.com/SituatedEvals/public>, commit `aa03186` or later):
+
+```bash
+python3 tools/check_submission_zip.py /path/to/dist/submission.zip
+```
+
+To run this repository's own checks:
+
+```bash
+python3 -m pip install -r requirements-dev.txt
+python3 -m pytest scripts
+```
+
+They cover: every committed file against the manifest; nothing unlisted in
+`submission/`; exact version pins; the `predict(frame, schema)` signature; model
+addresses at full commit hashes; a zip that is written the same way every time;
+and a download that continues after a dropped connection. The same checks run
+on Linux, macOS and Windows for every change to this repository.
+
+## Run it on practice data
+
+The real survey data are not public. The starter kit can write practice data of
+the same shape and run a submission the way the grader does. Its answers are
+invented, so the score it prints says nothing about the real one; it shows that
+the code runs within the contract.
+
+After the quick start above, with the model files in `submission/`:
+
+```bash
+git clone https://github.com/SituatedEvals/public starter-kit
+cd starter-kit
+python3 -m pip install -r requirements.txt
+python3 make_sandbox.py --schema data/unicef.json --out _sandbox/unicef
+python3 score.py --submission /path/to/simulacrabench-ludilume/submission \
+                 --data _sandbox/unicef --schema data/unicef.json --phase 1
+```
+
+`score.py` installs `submission/requirements.txt` into a fresh environment and
+runs `predict()` with the network removed. Use `--phase 2` for the Test
+setting. We ran it this way on Kaggle and Colab GPUs; we did not test a run
+without a GPU.
+
+## Hardware and time
+
+The hosted grader ran the zip on Python 3.13 with one H100 GPU, 8 CPUs and
+16 GB of memory, under a limit of 3,600 seconds for the three instruments
+together. The hosted image already holds PyTorch, scikit-learn and SciPy; the
+other packages are pinned in `submission/requirements.txt`. Our Test run took
+about 36 minutes.
+
+Our own full-length rehearsals ran on a 16 GB T4 GPU and used nearly the whole
+3,600 seconds.
