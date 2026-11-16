@@ -97,9 +97,11 @@ python3 scripts/build_submission.py
 
 `fetch_weights.py` downloads three files, about 1 GB together, from Hugging
 Face. No account is needed. Each file is kept only if its size and SHA-256
-match `manifest.json`. `build_submission.py` then checks all 156 files and
-writes `dist/submission.zip`. The whole thing takes a few minutes; most of it
-is the download.
+match `manifest.json`. If the connection drops, the script continues from where
+it stopped; if it gives up, run it again. `build_submission.py` then checks all
+156 files and writes `dist/submission.zip`. The download takes from a few
+minutes to half an hour, depending on the connection; the build takes under a
+minute.
 
 The tag `test-submission-1053745` marks the commit that the technical report
 cites. The files under `submission/` and `manifest.json` are the ones that were
