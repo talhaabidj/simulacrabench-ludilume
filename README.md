@@ -160,6 +160,14 @@ nearly the whole 3,600 seconds. We did not test a run without a GPU.
   still identify the exact files.
 - `submission/main.py` is kept byte for byte as it was scored. It is one long
   file and carries comments from development.
+- The hosted logs are hidden, so we cannot confirm that household matching
+  switched on in the real UNHCR file. Its evidence is two panels built from one
+  other public survey, with skip patterns of our own making; rows without a
+  matched partner lost a little there.
+- Later builds were chosen on public stand-in surveys, so their gains on the
+  real data are unmeasured.
+- Hidden answers are predicted one by one. There is no joint model of a
+  respondent's answers.
 
 ## Pretrained models
 
