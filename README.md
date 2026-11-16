@@ -39,10 +39,13 @@ visible. No model is trained beforehand on survey data.
    visible rows obey the rule, closed rows get the "not asked" option directly.
    When the parent is itself a scored question, extra candidates combine the
    parent's predicted answer with a model fitted on the rows that were asked.
-3. **Household matching (UNHCR).** The UNHCR file holds two survey rounds, and
-   its schema gives no identifier that links a household across them. In case
-   some households were interviewed in both, rows from the two rounds are
-   matched when each is the other's best match by a clear margin, first on
+3. **Household matching (UNHCR).** The UNHCR file holds two survey rounds.
+   UNHCR's public note on the survey's second wave says that it recontacted the
+   first-wave households (see Data below). The competition schema neither says
+   that its rounds are those waves nor gives an identifier that links a
+   household across them. In case households do appear in both rounds, rows
+   from the two rounds are matched when each is the other's best match by a
+   clear margin, first on
    their answers and then, at a lower bar, where the background columns also
    agree. A matched partner's answers give two more candidates per question. The
    step stays off when it finds fewer than 30 matches, and the hosted run does
