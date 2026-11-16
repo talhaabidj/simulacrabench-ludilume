@@ -311,3 +311,48 @@ public methodology notes on the survey behind the UNHCR instrument
 (<https://data.unhcr.org/en/documents/details/118503> and
 <https://data.unhcr.org/en/documents/details/122187>). These are documents, not
 data.
+
+## Evidence in short
+
+All of this comes from the public surveys above, made into stand-in instruments
+with known answers. None of it is measured on the competition data. Gains are
+in nats per answer, with 95% intervals.
+
+- **Household matching.** On a panel built from the Argentine household survey,
+  with 64% of households in both rounds, matching gained +0.0081
+  [+0.0034, +0.0130] over the same build without it. On a panel of the size of
+  the UNHCR file it gained +0.0023 [+0.0002, +0.0044]. 98% to 99% of the matches
+  were correct. Rows without a matched partner lost a little, so matching pays
+  only where enough held-out rows have one.
+- **What each model adds.** In a replay of an earlier build with one candidate
+  removed at a time, pooled over seven surveys, removing TabPFN-3.5 cost the
+  most (0.00051 [0.00041, 0.00061]), then TabICL and the first network. No
+  other single candidate was needed on its own.
+- **More respondents help slowly.** Going from about 61% of the visible
+  respondents to all of them gained 0.0016 to 0.0045 on four surveys, well
+  under 1% of the loss.
+
+The technical report gives the tables, the rule each change had to pass, and
+the ideas that were tried and dropped.
+
+## Limitations
+
+- The score cannot be reproduced outside the hosted grader, because the survey
+  data are not released. What this repository reproduces exactly is the
+  submitted file.
+- The run is driven by the clock: it does as much as fits in the time limit.
+  Seeds are fixed, but a different machine finishes a different amount of work,
+  so two runs can give slightly different predictions.
+- The three model files are hosted by their authors. If one is moved or removed,
+  `fetch_weights.py` will fail for that file; the hashes in `manifest.json`
+  still identify the exact files.
+- `submission/main.py` is kept byte for byte as it was scored. It is one long
+  file and carries comments from development.
+- The hosted logs are hidden, so we cannot confirm that household matching
+  switched on in the real UNHCR file. Its evidence is two panels built from one
+  other public survey, with skip patterns of our own making; rows without a
+  matched partner lost a little there.
+- Later builds were chosen on public stand-in surveys, so their gains on the
+  real data are unmeasured.
+- Hidden answers are predicted one by one. There is no joint model of a
+  respondent's answers.
