@@ -332,8 +332,8 @@ in nats per answer, with 95% intervals.
   respondents to all of them gained 0.0016 to 0.0045 on four surveys, well
   under 1% of the loss.
 
-The technical report gives the tables, the rule each change had to pass, and
-the ideas that were tried and dropped.
+The technical report gives the tables, the pass bars that were set beforehand,
+and the ideas that were tried and dropped.
 
 ## Limitations
 
