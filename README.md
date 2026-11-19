@@ -273,7 +273,7 @@ All three are public, unmodified, and bundled in the zip.
 |---|---|---|---|---|
 | TabICL v2 | `jingang/TabICL` @ `4dcd344ece2c00be9e831fdd35bed57b5ad83e19` | `tabicl-classifier-v2-20260212.ckpt` | `bdc7dbd5e4ff21f8f0456fcf90c6b7cdf72dbea960f2d05b19bec19f9b3d4ed0` | BSD-3-Clause |
 | TabPFN v2 | `Prior-Labs/TabPFN-v2-clf` @ `275f19d2add9c2c0de38f9ebaded3856599fa2e7` | `tabpfn-v2-classifier-v2_default.ckpt` | `cf8c519c01eaf1613ee91239006d57b1c806ff5f23ac1aeb1315ba1015210e49` | Prior Labs License 1.1 |
-| TabPFN-3.5 | `Prior-Labs/tabpfn_3_5` @ `06bf2ba35c80a92a3b9abb436b99cf49e7a0365e` | `tabpfn-v3.5-20260909_multiclass.safetensors` | `4f1e155b09ae1c9860c75cd0a16f811b7431ddac4cb8022ee5e4498070f44149` | TabPFN-3.5 Non-Commercial License |
+| TabPFN-3.5 | `Prior-Labs/tabpfn_3_5` @ `06bf2ba35c80a92a3b9abb436b99cf49e7a0365e` | `tabpfn-v3.5-20260909_multiclass.safetensors` | `4f1e155b09ae1c9860c75cd0a16f811b7431ddac4cb8022ee5e4498070f44149` | TabPFN-3.5 License v1.0 (non-commercial) |
 
 Built with PriorLabs-TabPFN.
 
