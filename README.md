@@ -282,6 +282,13 @@ Built with PriorLabs-TabPFN.
 - `submission/sdm/` is structured-data-models 0.2.1 (Apache-2.0). It was bundled
   for a model that the final build does not use; no prediction depends on it. It
   is kept here so that the rebuilt zip matches the submitted one.
+- That model is NVIDIA Kumo-Tabular, tried and dropped before the test phase.
+  `main.py` still holds its old code, because the file must match the scored zip:
+  `_kumo_checkpoint()` is never called, `sdm` is never imported, and no
+  `models.txt` asks the platform to fetch its weights. The names left from it now
+  run TabPFN-3.5 only: `USE_KUMO` switches TabPFN-3.5 on, and `_kumo()` and
+  `_kumo_more()` are the TabPFN-3.5 candidates (`pfn35_full` and `pfn35_more`).
+  The three models in the table above are the only pretrained models used.
 - `submission/libgomp-*.so.1` are the GNU OpenMP runtime from Debian 11
   (bullseye), package `libgomp1`, for x86_64 and aarch64. They are under GPL-3
   with the GCC Runtime Library Exception; see
