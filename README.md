@@ -9,8 +9,9 @@ a NeurIPS 2026 competition. The task is to predict, for each held-out survey
 answer, a probability for every answer option, on three instruments from UNICEF,
 the World Bank and UNHCR.
 
-This repository holds the exact files that were scored, and two scripts that
-rebuild the submitted zip byte for byte.
+This repository holds the 153 files of the scored zip that are not model
+weights, exactly as they were scored, and two scripts: one fetches the three
+model files at pinned commits, the other rebuilds the submitted zip.
 
 ## Contents
 
@@ -98,7 +99,7 @@ scored; they have not changed since they were added to this repository.
 | `scripts/manifest.py` | Helpers the two scripts share |
 | `scripts/test_*.py` | Checks of the repository that need no GPU and no model files |
 | `requirements-dev.txt` | The pinned tool that runs the checks |
-| `.github/workflows/checks.yml` | Runs the checks on Linux, macOS and Windows for every change |
+| `.github/workflows/checks.yml` | Runs the checks on Linux, macOS and Windows for every push to `main` and every pull request |
 | `CITATION.cff` | How to cite this repository |
 
 The three model files (about 1 GB) are not in the repository. They are fetched
@@ -133,10 +134,12 @@ flowchart TD
    - multi-task neural networks that share one trunk across all questions;
    - three tabular foundation models used in context, without fine-tuning:
      TabICL v2, TabPFN v2 and TabPFN-3.5.
-2. **Skip logic.** When a question's gate parent is a background answer and the
-   visible rows obey the rule, closed rows get the "not asked" option directly.
-   When the parent is itself a scored question, extra candidates combine the
-   parent's predicted answer with a model fitted on the rows that were asked.
+2. **Skip logic.** When a question's gate parent is a background answer, the
+   closed and the open rows are checked separately; where the visible rows obey
+   the rule, closed rows get the visible closed rows' smoothed answers (in
+   practice the "not asked" option). When the parent is itself a scored
+   question, extra candidates combine the parent's predicted answer with a
+   model fitted on the rows that were asked, among others.
 3. **Household matching (UNHCR).** The UNHCR file holds two survey rounds.
    UNHCR's public note on the survey's second wave says that it recontacted the
    first-wave households (see [Data](#data)). The competition schema neither
@@ -145,25 +148,31 @@ flowchart TD
    from the two rounds are matched when each is the other's best match by a
    clear margin, first on their answers and then, at a lower bar, where the
    background columns also agree. A matched partner's answers give two more
-   candidates per question. The step stays off when it finds fewer than 30
-   matches, and the hosted run does not tell us whether it switched on. We
-   asked the organizers whether a model may benefit from such matches, using
+   candidates per question. The pairs are found once on all visible rows, so
+   these candidates' out-of-fold scores are somewhat optimistic. The step
+   stays off when it finds fewer than 30 matches, and the hosted run does not
+   tell us whether it switched on. We asked the organizers whether a model may
+   benefit from such matches, using
    only the GIVEN columns and the visible rows provided at run time; they
    replied by email (6 November 2026) that this is permitted. Nothing is
    matched to any outside source, and no person is identified.
-4. **Blend.** Every candidate predicts the visible rows out of fold. Per
-   question, mixture weights are fitted by EM to maximise the grader's own
-   floored log score on those predictions, and the better of a linear, a
-   tempered or a log pool is kept. The held-out rows get that blend.
+4. **Blend.** Every candidate predicts the visible rows out of fold (four
+   folds, or two halves for slower models); most are then refitted on all
+   visible rows, and some average their fold fits. Per question, mixture
+   weights are fitted by EM to maximise the grader's own floored log score on
+   those predictions, and the better of a linear, a tempered or a log pool is
+   kept. The held-out rows get that blend. Networks and trees stop early on
+   ordinary log loss, not on the grader's score.
 5. **After the blend.** For ordered options, some probability may move to the
    neighbouring options when that scores better out of fold. The grader mixes
    every vector with a small flat floor before scoring; the vector sent is the
-   one whose scored version equals the blend, whenever that scores better out
-   of fold.
+   one whose scored version equals the blend (clipped where that is not
+   possible). Outside rows closed by a rule, this is kept only when it scores
+   better out of fold.
 
-Every setting is a constant near the top of `submission/main.py`. The technical
-report submitted to the competition's OpenReview venue lists them all and
-describes the method and its evidence in full.
+The main settings are constants near the top of `submission/main.py`. The
+technical report submitted to the competition's OpenReview venue lists them,
+names the code paths they leave out, and describes the evidence.
 
 ## How the submission runs
 
@@ -174,14 +183,17 @@ instrument. `frame` holds every respondent, with the held-out answers blank.
 - **One clock for three instruments.** The time limit covers all three calls
   together. Each call takes a share of what is left, by a nominal need that
   grows with its number of scored questions.
-- **Passes, cheapest first.** Work runs in passes, so a slow machine loses
-  accuracy, not answers. Any candidate that fails is dropped. A question with
-  nothing left gets the crowd marginal.
+- **Passes in a fixed order.** Work runs in passes, so a slow machine loses
+  accuracy, not answers. Any candidate that fails is dropped. The crowd
+  marginal is always one of the candidates.
 - **No silent weak run.** On a real instrument the run stops with an error if
   TabICL or TabPFN-3.5 cannot load, because a failed Test run may be repeated
   and a weak finished one may not.
-- **No network, no files.** The model files are read from the zip. Nothing is
-  downloaded or written during a run.
+- **No network.** The model files are read from the zip, or from a local
+  Hugging Face cache after their hash is checked. Nothing is downloaded. With
+  the default settings nothing is written either, except that a TabPFN-3.5
+  file found in a cache may be hard-linked or copied to a temporary folder so
+  that its name ends in `.safetensors`.
 
 The hosted platform sets none of the switches below. They exist for testing.
 
@@ -189,9 +201,9 @@ The hosted platform sets none of the switches below. They exist for testing.
 |---|---|---|
 | `SB_BUDGET_SCALE` | Multiplies the time budget | `1` |
 | `SB_JOBS` | Number of worker threads | the smaller of 8 and the CPU count |
-| `SB_ICL_CPU` | When set, TabICL runs on the CPU | not set (GPU) |
+| `SB_ICL_CPU` | When set, TabICL, TabPFN v2 and TabPFN-3.5 run on the CPU | not set (GPU) |
 | `SB_REQUIRE_MODELS` | `0` lets a run continue without TabICL or TabPFN-3.5 | `1` |
-| `SB_DEBUG` | Path of a file that receives the time of each pass | not set (nothing is written) |
+| `SB_DEBUG` | Path prefix for diagnostics: time of each pass, errors and blend summaries, a matching log and, when matching runs, an `.npz` file with respondent ids, matched rows and partner probabilities. Use it only on practice data | not set (nothing is written) |
 
 ## Rebuild and verify
 
@@ -203,20 +215,29 @@ it stopped; if it gives up, run it again. `build_submission.py` then checks all
 minutes to half an hour, depending on the connection; the build takes under a
 minute.
 
-The zip is written with fixed names, order, dates and permissions. With zlib
-1.2.12 it is byte-identical to the submitted file. With another zlib version
-the compressed bytes can differ; the script then says so, and the 156 files
-inside are still identical, each checked by hash. To see your zlib version:
+The zip is written with fixed names, order, dates and permissions. It was
+checked byte-identical on macOS with CPython 3.14.4 and zlib 1.2.12. On another
+system the zip's bytes can differ even with the same zlib: Python records the
+operating system in each zip header, and another zlib can compress
+differently. The 156 files inside are still checked one by one against their
+hashes before the zip is written. The script exits without an error in both
+cases, so compare the two SHA-256 lines it prints. To see your Python and zlib
+versions:
 
 ```bash
-python3 -c "import zlib; print(zlib.ZLIB_RUNTIME_VERSION)"
+python3 -c "import sys, zlib; print(sys.version, zlib.ZLIB_RUNTIME_VERSION)"
 ```
 
 To check the zip against the competition's contract, use the official starter
-kit (<https://github.com/SituatedEvals/public>, commit `aa03186` or later):
+kit (<https://github.com/SituatedEvals/public>, commit `aa03186` or later). The
+checker imports the submission and runs a small prediction, so install the
+starter kit's requirements first, then run it from the starter kit's folder:
 
 ```bash
-python3 tools/check_submission_zip.py /path/to/dist/submission.zip
+git clone https://github.com/SituatedEvals/public starter-kit
+cd starter-kit
+python3 -m pip install -r requirements.txt
+python3 tools/check_submission_zip.py ../simulacrabench-ludilume/dist/submission.zip
 ```
 
 To run this repository's own checks:
@@ -230,7 +251,7 @@ They cover: every committed file against the manifest; nothing unlisted in
 `submission/`; exact version pins; the `predict(frame, schema)` signature; model
 addresses at full commit hashes; a zip that is written the same way every time;
 and a download that continues after a dropped connection. The same checks run
-on Linux, macOS and Windows for every change to this repository.
+on Linux, macOS and Windows for every push to `main` and every pull request.
 
 ## Run it on practice data
 
@@ -239,7 +260,10 @@ the same shape and run a submission the way the grader does. Its answers are
 invented, so the score it prints says nothing about the real one; it shows that
 the code runs within the contract.
 
-After the quick start above, with the model files in `submission/`:
+After the quick start above, with the model files in `submission/`. This
+needs PyTorch with a CUDA GPU: without one the run stops when TabICL cannot
+load. To try it on a CPU, set `SB_ICL_CPU=1`, which also moves both TabPFN
+models to the CPU and is slow.
 
 ```bash
 git clone https://github.com/SituatedEvals/public starter-kit
@@ -252,8 +276,8 @@ python3 score.py --submission /path/to/simulacrabench-ludilume/submission \
 
 `score.py` installs `submission/requirements.txt` into a fresh environment and
 runs `predict()` with the network removed. Use `--phase 2` for the Test
-setting. We ran it this way on Kaggle and Colab GPUs; we did not test a run
-without a GPU.
+setting. Our final rehearsal ran the submission on Kaggle and Colab GPUs
+through our own rehearsal script; we did not test a run without a GPU.
 
 ## Hardware and time
 
@@ -328,13 +352,13 @@ This repository holds no survey data. The submission uses only the frame the
 grader passes to `predict()`.
 
 Public survey data were used offline, on Kaggle and Colab, to compare builds
-before uploading. They never entered the submission and were never linked to
-competition data:
+before uploading, and once to test fine-tuning TabICL (dropped). They never
+entered the submission and were never linked to competition data:
 
 | Data | Obtained from | Licence |
 |---|---|---|
-| Afrobarometer, rounds 6 to 9 | copies published by Electric Sheep Africa on Hugging Face (`electricsheepafrica/africa-afrobarometer-<country>`); original: <https://www.afrobarometer.org/data/> | CC-BY-4.0 (the copies) |
-| Encuesta Permanente de Hogares, Argentina. Source: Instituto Nacional de Estadística y Censos (INDEC) | `Matiasdn/eph-microdata-parquet` on Hugging Face | CC-BY-4.0 at the source: INDEC lists the survey under that licence on Argentina's open data portal (<https://datos.gob.ar>). The copy carries no licence tag |
+| Afrobarometer, rounds 6 to 9 for stand-in instruments (up to 12,000 respondents each); rounds 2 to 9 (330,284 rows) for one TabICL fine-tuning test whose weights were discarded | copies published by Electric Sheep Africa on Hugging Face (`electricsheepafrica/africa-afrobarometer-<country>`); original: <https://www.afrobarometer.org/data/> | CC-BY-4.0 (the copies) |
+| Encuesta Permanente de Hogares, Argentina (12,000 rows per stand-in; 3,527 to 10,400 rows per matching panel). Source: Instituto Nacional de Estadística y Censos (INDEC) | `Matiasdn/eph-microdata-parquet` on Hugging Face | CC-BY-4.0 at the source: INDEC lists the survey under that licence on Argentina's open data portal (<https://datos.gob.ar>). The copy carries no licence tag |
 | Rwanda Labour Force Survey 2019, 2022 and 2024, National Institute of Statistics of Rwanda | copies published by Electric Sheep Africa on Hugging Face; original: <https://microdata.statistics.gov.rw/> | CC-BY-4.0 (the copies) |
 | RIASEC test answers, Open-Source Psychometrics Project | <https://openpsychometrics.org/_rawdata/> | none stated |
 
@@ -353,16 +377,19 @@ in nats per answer, with 95% intervals.
 - **Household matching.** On a panel built from the Argentine household survey,
   with 64% of households in both rounds, matching gained +0.0081
   [+0.0034, +0.0130] over the same build without it. On a panel of the size of
-  the UNHCR file it gained +0.0023 [+0.0002, +0.0044]. 98% to 99% of the matches
-  were correct. Rows without a matched partner lost a little, so matching pays
-  only where enough held-out rows have one.
+  the UNHCR file it gained +0.0023 [+0.0002, +0.0044]. Of the accepted pairs
+  of visible rows, 98.3% and 99.1% were true pairs; for held-out rows that had
+  a visible partner, the top-ranked partner was the true one for 73.2% and
+  64.5%. For rows without a partner the change was -0.0077 [-0.0163, +0.0000]
+  and -0.0005 [-0.0046, +0.0037], so they did not gain. These numbers describe
+  these panels, not the UNHCR file.
 - **What each model adds.** In a replay of an earlier build with one candidate
   removed at a time, pooled over seven surveys, removing TabPFN-3.5 cost the
   most (0.00051 [0.00041, 0.00061]), then TabICL and the first network. No
   other single candidate was needed on its own.
 - **More respondents help slowly.** Going from about 61% of the visible
-  respondents to all of them gained 0.0016 to 0.0045 on four surveys, well
-  under 1% of the loss.
+  respondents to all of them gained 0.0016 to 0.0045 on four surveys (an
+  earlier build), well under 1% of the loss.
 
 The technical report gives the tables, the pass bars that were set beforehand,
 and the ideas that were tried and dropped.
@@ -383,7 +410,7 @@ and the ideas that were tried and dropped.
 - The hosted logs are hidden, so we cannot confirm that household matching
   switched on in the real UNHCR file. Its evidence is two panels built from one
   other public survey, with skip patterns of our own making; rows without a
-  matched partner lost a little there.
+  matched partner did not gain there.
 - Later builds were chosen on public stand-in surveys, so their gains on the
   real data are unmeasured.
 - Hidden answers are predicted one by one. There is no joint model of a
@@ -396,9 +423,9 @@ and the ideas that were tried and dropped.
 | `python3: command not found` | Use `python` if that is Python 3 on your system (`python --version`) |
 | The download stops with a connection error | Run `python3 scripts/fetch_weights.py` again. It continues from the partial file |
 | `INCOMPLETE <file>` | The connection dropped too often. Run the script again |
-| `MISMATCH <file>` | The downloaded file is not the pinned one, and the script has removed it. Run the script again. If it repeats, the file was changed at its source: please open an issue |
+| `MISMATCH <file>` | The downloaded file is not the pinned one, and the script has removed it. A broken transfer gives the same message, so run the script again. If it repeats, the file may have changed at its source: please open an issue |
 | "These files are missing or differ from manifest.json" | Run `fetch_weights.py` first. If a file under `submission/` is listed, restore it with `git checkout -- submission` |
-| "Same files, different zip bytes" | Your zlib is not 1.2.12. The 156 files are identical; only the compression differs |
+| "Same files, different zip bytes" | Your system writes the zip differently (operating system field or zlib version). The 156 files are identical; only the zip's own bytes differ |
 | On Windows, files under `submission/` differ from the manifest | A tool rewrote their line endings. Clone again; `.gitattributes` in this repository turns that conversion off in git |
 
 If something else goes wrong while rebuilding the zip, please open an issue on
