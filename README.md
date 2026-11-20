@@ -91,6 +91,7 @@ scored; they have not changed since they were added to this repository.
 | `submission/requirements.txt` | Packages the hosted image lacks, pinned to exact versions |
 | `submission/libgomp-*.so.1`, `libgomp-copyright.txt` | The OpenMP runtime that LightGBM needs, loaded only when the system has none |
 | `submission/sdm/`, `submission/licenses/`, `submission/NOTICE` | Third-party code and licences that were in the zip (see [below](#third-party-code-in-the-zip)) |
+| `third_party_licenses/` | Licence texts added after the run: GPLv3 for the OpenMP runtime, and the TabPFN v2 licence |
 | `manifest.json` | SHA-256 and size of every file in the submitted zip, the zip's own hash, and the pinned source of each model file |
 | `scripts/fetch_weights.py` | Downloads the three model files at their pinned commits and checks their hashes |
 | `scripts/build_submission.py` | Checks every file against the manifest and writes `dist/submission.zip` |
@@ -289,13 +290,37 @@ Built with PriorLabs-TabPFN.
   run TabPFN-3.5 only: `USE_KUMO` switches TabPFN-3.5 on, and `_kumo()` and
   `_kumo_more()` are the TabPFN-3.5 candidates (`pfn35_full` and `pfn35_more`).
   The three models in the table above are the only pretrained models used.
-- `submission/libgomp-*.so.1` are the GNU OpenMP runtime from Debian 11
-  (bullseye), package `libgomp1`, for x86_64 and aarch64. They are under GPL-3
-  with the GCC Runtime Library Exception; see
-  `submission/libgomp-copyright.txt`. The source is Debian's `gcc-10` package
-  (<https://sources.debian.org/src/gcc-10/>).
+- `submission/libgomp-*.so.1` are the GNU OpenMP runtime, unmodified, from the
+  Debian 11 (bullseye) package `libgomp1` version 10.2.1-6, for amd64
+  (`libgomp-x86_64.so.1`) and arm64 (`libgomp-aarch64.so.1`). Each file is
+  byte-identical to `usr/lib/<arch>-linux-gnu/libgomp.so.1.0.0` in
+  `libgomp1_10.2.1-6_amd64.deb` and `libgomp1_10.2.1-6_arm64.deb`. They are
+  under the GNU General Public License version 3 or later, with the GCC Runtime
+  Library Exception 3.1:
+  - the full GPLv3 text is in
+    [`third_party_licenses/GPL-3.0.txt`](third_party_licenses/GPL-3.0.txt)
+    (Debian's `/usr/share/common-licenses/GPL-3`);
+  - Debian's copyright file, with the Runtime Library Exception, is
+    `submission/libgomp-copyright.txt`;
+  - the complete corresponding source is Debian's `gcc-10` source package,
+    version 10.2.1-6, built into those binaries:
+    [`gcc-10_10.2.1-6.dsc`](https://deb.debian.org/debian/pool/main/g/gcc-10/gcc-10_10.2.1-6.dsc),
+    [`gcc-10_10.2.1.orig.tar.xz`](https://deb.debian.org/debian/pool/main/g/gcc-10/gcc-10_10.2.1.orig.tar.xz)
+    (SHA-256 `ea3c05faa381486e6b859c047dc14977418bf1ccda4567064e016493fd6fffec`)
+    and
+    [`gcc-10_10.2.1-6.debian.tar.xz`](https://deb.debian.org/debian/pool/main/g/gcc-10/gcc-10_10.2.1-6.debian.tar.xz)
+    (SHA-256 `a95d6b9da2be83f9751850b002021281411ff1003d9feb77298b131da47820b3`).
+    The same files are kept at <https://snapshot.debian.org/package/gcc-10/10.2.1-6/>.
 - Licences for the above and for TabPFN-3.5 are in `submission/licenses/` and
-  `submission/NOTICE`.
+  `submission/NOTICE`. Links inside those bundled notices point to paths in
+  their upstream projects, not in this repository.
+- The TabPFN v2 weights are under the Prior Labs License 1.1, which asks that
+  anyone who passes the weights on also passes on the licence. Its full text, at
+  the pinned commit, is in
+  [`third_party_licenses/TabPFN-v2-LICENSE.txt`](third_party_licenses/TabPFN-v2-LICENSE.txt).
+- The zip that was scored did not carry the GPLv3 text or the TabPFN v2 licence
+  text; it cannot change now. If you share a zip you rebuilt from this
+  repository, put both files from `third_party_licenses/` next to it.
 
 ## Data
 
